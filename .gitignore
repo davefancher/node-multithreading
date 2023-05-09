@@ -2,7 +2,9 @@
 *.iml
 *.iws
 *.eml
+images/
 out/
+output/
 .DS_Store
 .svn
 log/*.log
