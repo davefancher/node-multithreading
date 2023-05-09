@@ -1,0 +1,17 @@
+{
+  "name": "multithreading",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dayjs": "^1.11.7",
+    "jimp": "^0.22.7",
+    "lodash": "^4.17.21"
+  },
+  "bin": {
+    "resize": "./app.js"
+  }
+}
