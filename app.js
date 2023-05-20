@@ -22,14 +22,10 @@ const RESIZE_STRATEGIES = Object.freeze({
     THREAD_POOL_WITH_SHARED_BUFFER: "threadPoolWithSharedBuffer"
 });
 
-const strategy = RESIZE_STRATEGIES.THREAD_POOL_WITH_SHARED_BUFFER;
-const doResize =
-    `./lib/strategies/${strategy}`
-    [PIPE_SYNC](require)
-    [WITH_TIMING]("Resize", "info");
+//const strategy = RESIZE_STRATEGIES.THREAD_POOL_WITH_SHARED_BUFFER;
+const [ ,, sourceFile, strategy ] = process.argv;
 
-process
-    .argv[2]
+sourceFile
     [PIPE_SYNC](path.resolve)
     [PIPE_SYNC](
         sourceFilePath => ({
@@ -43,5 +39,8 @@ process
             fs.mkdirSync(options.targetDirectory);
         }
     })
-    [PIPE_SYNC](doResize)
+    [PIPE_SYNC](
+        `./lib/strategies/${strategy}`
+            [PIPE_SYNC](require)
+            [WITH_TIMING]("Resize", "info"))
     [PIPE](process.exit);
