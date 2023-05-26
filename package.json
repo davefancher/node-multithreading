@@ -9,7 +9,8 @@
   "dependencies": {
     "dayjs": "^1.11.7",
     "jimp": "^0.22.7",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "winston": "^3.8.2"
   },
   "bin": {
     "resize": "./app.js"

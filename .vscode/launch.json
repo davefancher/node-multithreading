@@ -26,9 +26,7 @@
             ],
             "program": "${workspaceFolder}\\app.js",
             "args": [ "${workspaceFolder}\\images\\Stick Macro.jpg", "${input:resizeStrategy}" ],
-            "env": {
-                "UV_THREADPOOL_SIZE": "16"
-            }
+            "outputCapture": "std"
         }
     ]
 }
