@@ -9,11 +9,10 @@
             "type": "pickString",
             "description": "Select a resize processing strategy",
             "options": [
-                "serial",
-                "parallel",
-                "workerThread",
-                "threadPool",
-                "threadPoolWithSharedBuffer"
+                "00 - serial",
+                "01 - parallel",
+                "02 - workerThread",
+                "03 - threadPool"
             ]
         }
     ],
@@ -26,7 +25,10 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}\\app.js",
-            "args": [ "${workspaceFolder}\\images\\Stick Macro.jpg", "${input:resizeStrategy}" ]
+            "args": [ "${workspaceFolder}\\images\\Stick Macro.jpg", "${input:resizeStrategy}" ],
+            "env": {
+                "UV_THREADPOOL_SIZE": "16"
+            }
         }
     ]
 }
