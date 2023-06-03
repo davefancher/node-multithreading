@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        .log_list {
+            font-family: 'Courier New', Courier, monospace;
+            height: 200px;
+            overflow-y: scroll;
+        }
+
+        .log_item {
+            list-style: none;
+        }
+
+        .log_item_silly {
+            color: #E0E0E0;
+        }
+
+        .log_item_debug {
+            color: #888888;
+        }
+
+        .log_item_verbose {
+            color: #555555
+        }
+
+        .log_item_info {
+            color: #008800;
+        }
+
+        .log_item_warn {
+            color: #AAAA00;
+        }
+
+        .log_item_error {
+            color: #AA0000;
+        }
+    </style>
+    <script src="/socket.io/socket.io.js" lang="javascript"></script>
+    <script lang="javascript">
+        window.addEventListener(
+            "load",
+            () => {
+                const logList = document.getElementsByClassName("log_list")[0];
+
+                let logScrollInterval;
+
+                const startResize =
+                    socket =>
+                        e => {
+                            logList.replaceChildren([])
+                            const resizeStrategy = document.getElementById("resizeStrategy").value;
+                            const file = document.getElementById("fileToResize").files[0];
+
+                            socket.emit(`resize-${resizeStrategy}`, file);
+
+                            if (!logScrollInterval) {
+                                logScrollInterval =
+                                    setInterval(
+                                        () => {
+                                            if (logList.lastChild) {
+                                                logList.lastChild.scrollIntoView()
+                                            }
+                                        }, 1000);
+                            }
+                        };
+
+                const clearLogScrollInterval =
+                    () => {
+                        if (logScrollInterval) {
+                            clearInterval(logScrollInterval);
+
+                            logList.lastChild.scrollIntoView();
+                        }
+                    };
+
+                const writeLogMessage =
+                    logJson => {
+                        const log = JSON.parse(logJson);
+
+                        const newLogItem = document.createElement("li");
+                        newLogItem.classList.add("log_item", `log_item_${log.level}`);
+                        newLogItem.appendChild(
+                            document.createTextNode(`${log.timestamp} ${log.label} ${log.level.padEnd(10, "\xa0")} ${log.message}`)
+                        );
+
+                        logList.appendChild(newLogItem);
+                    };
+
+                const socket = io("ws://localhost");
+
+                socket
+                    .on("log", writeLogMessage)
+                    .on("resize-complete", clearLogScrollInterval);
+                document
+                    .getElementById("startResize")
+                    .addEventListener("mouseup", startResize(socket));
+            }
+        )
+    </script>
+</head>
+
+<body>
+    <select id="resizeStrategy">
+        <option value="serial">Serial</option>
+        <option value="parallel">Parallel</option>
+        <option value="workerThread">Worker Thread</option>
+        <option value="threadPool">Thread Pool</option>
+    </select>
+    <input id="fileToResize" type="file" />
+    <button id="startResize">Resize</button>
+
+    <ul class="log_list"></ul>
+</body>
+
+</html>
