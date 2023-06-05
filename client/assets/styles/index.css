@@ -1,0 +1,105 @@
+section {
+    height: 100%;
+}
+
+.demo_slide {
+    display: grid;
+    grid-template-columns: auto  425px;
+    grid-template-rows: 100px 100px 1fr 1fr;
+    height: 100%;
+}
+
+.demo_slide > .slide_title {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.demo_slide > .cpu_usage_container {
+    grid-column: 2;
+    grid-row: 1 / 5;
+    background-color: #EEE8D5;
+    display: flex;
+    flex-flow: row wrap;
+    align-content: flex-start;
+}
+
+.demo_slide > .cpu_usage_container > DIV {
+    width: 200px;
+    padding: 5px;
+}
+
+.demo_slide .log_list {
+    align-self: stretch;
+    background-color: #3F3F3F;
+    border: 1px solid #EEE8D5;
+    grid-column: 1;
+    grid-row: 3;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12pt;
+    margin: 10px;
+    overflow-y: scroll;
+    padding: 10px;
+}
+
+.log_list > .log_item {
+    list-style: none;
+}
+
+.log_list > .log_item_silly {
+    color: #E0E0E0;
+}
+
+.log_list > .log_item_debug {
+    color: #888888;
+}
+
+.log_list > .log_item_verbose {
+    color: #555555
+}
+
+.log_list > .log_item_info {
+    color: #EEE8D5;
+}
+
+.log_list > .log_item_warn {
+    color: #999900;
+}
+
+.log_list > .log_item_error {
+    color: #AA0000;
+}
+
+.demo_controls {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.file_list {
+    align-self: stretch;
+    display: flex!important;
+    flex-flow: row wrap;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12pt;
+    grid-column: 1;
+    grid-row: 4;
+    margin-top: 10px;
+}
+
+.file_list > LI {
+    list-style: none;
+    padding-right: 3em;
+}
+
+.file_list > LI > A {
+    background-color: #EEE8D5;
+    border: solid 1px #EEE8D5;
+    color: #002b36;
+    display: inline-block;
+    padding: 5px;
+    width: 425px;
+}
+
+.file_list > LI > A:hover {
+    color: #EEE8D5;
+    background-color: #002b36;
+}

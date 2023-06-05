@@ -2,116 +2,106 @@
 <html>
 
 <head>
-    <style>
-        .log_list {
-            font-family: 'Courier New', Courier, monospace;
-            height: 200px;
-            overflow-y: scroll;
-        }
+    <link rel="stylesheet" href="/lib/revealjs/reveal.css">
+    <link rel="stylesheet" href="/lib/revealjs/theme/moon.css">
+    <link rel="stylesheet" type="text/css" href="/assets/styles/index.css" />
 
-        .log_item {
-            list-style: none;
-        }
-
-        .log_item_silly {
-            color: #E0E0E0;
-        }
-
-        .log_item_debug {
-            color: #888888;
-        }
-
-        .log_item_verbose {
-            color: #555555
-        }
-
-        .log_item_info {
-            color: #008800;
-        }
-
-        .log_item_warn {
-            color: #AAAA00;
-        }
-
-        .log_item_error {
-            color: #AA0000;
-        }
-    </style>
     <script src="/socket.io/socket.io.js" lang="javascript"></script>
-    <script lang="javascript">
-        window.addEventListener(
-            "load",
-            () => {
-                const logList = document.getElementsByClassName("log_list")[0];
+    <script src="/lib/chartjs/chart.umd.js" lang="javascript"></script>
+    <script src="/lib/revealjs/reveal.js" lang="javascript"></script>
+    <script src="/assets/scripts/index.js" lang="javascript"></script>
 
-                let logScrollInterval;
-
-                const startResize =
-                    socket =>
-                        e => {
-                            logList.replaceChildren([])
-                            const resizeStrategy = document.getElementById("resizeStrategy").value;
-                            const file = document.getElementById("fileToResize").files[0];
-
-                            socket.emit(`resize-${resizeStrategy}`, file);
-
-                            if (!logScrollInterval) {
-                                logScrollInterval =
-                                    setInterval(
-                                        () => {
-                                            if (logList.lastChild) {
-                                                logList.lastChild.scrollIntoView()
-                                            }
-                                        }, 1000);
-                            }
-                        };
-
-                const clearLogScrollInterval =
-                    () => {
-                        if (logScrollInterval) {
-                            clearInterval(logScrollInterval);
-
-                            logList.lastChild.scrollIntoView();
-                        }
-                    };
-
-                const writeLogMessage =
-                    logJson => {
-                        const log = JSON.parse(logJson);
-
-                        const newLogItem = document.createElement("li");
-                        newLogItem.classList.add("log_item", `log_item_${log.level}`);
-                        newLogItem.appendChild(
-                            document.createTextNode(`${log.timestamp} ${log.label} ${log.level.padEnd(10, "\xa0")} ${log.message}`)
-                        );
-
-                        logList.appendChild(newLogItem);
-                    };
-
-                const socket = io("ws://localhost");
-
-                socket
-                    .on("log", writeLogMessage)
-                    .on("resize-complete", clearLogScrollInterval);
-                document
-                    .getElementById("startResize")
-                    .addEventListener("mouseup", startResize(socket));
-            }
-        )
-    </script>
+    <title>JavaScript Multithreading</title>
 </head>
 
 <body>
-    <select id="resizeStrategy">
-        <option value="serial">Serial</option>
-        <option value="parallel">Parallel</option>
-        <option value="workerThread">Worker Thread</option>
-        <option value="threadPool">Thread Pool</option>
-    </select>
-    <input id="fileToResize" type="file" />
-    <button id="startResize">Resize</button>
+    <div class="reveal">
+        <div class="slides">
+            <!-- <section>
+                <h1>JavaScript Multithreading</h1>
+            </section> -->
 
-    <ul class="log_list"></ul>
+            <section id="demoSlide_serial">
+                <div class="demo_slide">
+                    <div class="slide_title">
+                        <h2>Serial Demo</h2>
+                    </div>
+
+                    <div id="cpuUsage_serial" class="cpu_usage_container">
+                    </div>
+
+                    <div class="demo_controls">
+                        <input id="fileSelector_serial" type="file" accept="image/jpeg" />
+                        <button id="startButton_serial">Start</button>
+                    </div>
+
+                    <ol id="logList_serial" class="log_list"></ol>
+
+                    <ul id="fileList_serial" class="file_list"></ul>
+                </div>
+            </section>
+
+            <section id="demoSlide_parallel">
+                <div class="demo_slide">
+                    <div class="slide_title">
+                        <h2>Parallel Demo</h2>
+                    </div>
+
+                    <div id="cpuUsage_parallel" class="cpu_usage_container">
+                    </div>
+
+                    <div class="demo_controls">
+                        <input id="fileSelector_parallel" type="file" accept="image/jpeg" />
+                        <button id="startButton_parallel">Start</button>
+                    </div>
+
+                    <ol id="logList_parallel" class="log_list"></ol>
+
+                    <ul id="fileList_parallel" class="file_list"></ul>
+                </div>
+            </section>
+
+            <section id="demoSlide_workerThread">
+                <div class="demo_slide">
+                    <div class="slide_title">
+                        <h2>Worker Thread Demo</h2>
+                    </div>
+
+                    <div id="cpuUsage_workerThread" class="cpu_usage_container">
+                    </div>
+
+                    <div class="demo_controls">
+                        <input id="fileSelector_workerThread" type="file" accept="image/jpeg" />
+                        <button id="startButton_workerThread">Start</button>
+                    </div>
+
+                    <ol id="logList_workerThread" class="log_list"></ol>
+
+                    <ul id="fileList_workerThread" class="file_list"></ul>
+                </div>
+            </section>
+
+            <section id="demoSlide_threadPool">
+                <div class="demo_slide">
+                    <div class="slide_title">
+                        <h2>Thread Pool Demo</h2>
+                    </div>
+
+                    <div id="cpuUsage_threadPool" class="cpu_usage_container">
+                    </div>
+
+                    <div class="demo_controls">
+                        <input id="fileSelector_threadPool" type="file" accept="image/jpeg" />
+                        <button id="startButton_threadPool">Start</button>
+                    </div>
+
+                    <ol id="logList_threadPool" class="log_list"></ol>
+
+                    <ul id="fileList_threadPool" class="file_list"></ul>
+                </div>
+            </section>
+        </div>
+    </div>
 </body>
 
 </html>
