@@ -18,7 +18,6 @@ const { LOG_LEVEL, PROCESSING_STRATEGY } = require("./lib/constants");
 const { PIPE, PIPE_SYNC, TEE_SYNC, WITH_TIMING } = require("./lib/extensions");
 
 const TARGET_SCALES = [ 10, 20, 30, 40, 50, 60, 70, 80, 90, 150, 200 ];
-// const TARGET_SCALES = [ 10, 20, 30 ];
 
 let lastCpuTimes = os.cpus();
 
@@ -100,16 +99,20 @@ const doResize =
                 });
         });
 
-const app = express();
-const httpServer = http.createServer(app);
+const httpServer =
+    express()
+        .use("/assets/images/generated", express.static("./output"))
+        .use("/lib/chartjs", express.static("./node_modules/chart.js/dist"))
+        .use("/lib/revealjs", express.static("./node_modules/reveal.js/dist"))
+        .use("/", express.static("./client/"))
+        [PIPE_SYNC](http.createServer);
 
 const io =
     new SocketIOServer(
         httpServer,
         {
             maxHttpBufferSize: 1e8,
-            transports: [ "websocket" ],
-            pingTimeout: 60000
+            transports: [ "websocket" ]
         })
         .on("connection",
             socket =>
@@ -127,22 +130,11 @@ winston
             combine(
                 colorize({ all: true }),
                 timestamp(),
-                conditionalLabel({ label: `[Thread Id: ${threadId.toString().padStart(2, "0")}]`}),
+                conditionalLabel({ label: `[${process.pid}:${threadId.toString().padStart(2, "0")}]`}),
                 printf(
                     ({ level, message, label, timestamp }) =>
                         `${timestamp} ${level.padEnd(10, " ")} ${label} ${message}`))
     }))
-    // .add(new winston.transports.File({
-    //     filename: "./log/resize.log",
-    //     level: LOG_LEVEL.INFO,
-    //     format:
-    //         combine(
-    //             timestamp(),
-    //             conditionalLabel({ label: `Thread Id: ${threadId.toString().padStart(2, "0")}`}),
-    //             printf(
-    //                 ({ level, message, label, timestamp }) =>
-    //                     `${timestamp}  ${level.padEnd(10, " ")} [${label}] ${message}`))
-    // }))
     .add(new winston.transports.Stream({
         level: LOG_LEVEL.DEBUG,
         stream: new Writable({
@@ -153,7 +145,7 @@ winston
         }),
         format: combine(
             timestamp(),
-            conditionalLabel({ label: `[Thread Id: ${threadId.toString().padStart(2, "0")}]`}),
+            conditionalLabel({ label: `[${process.pid}:${threadId.toString().padStart(2, "0")}]`}),
             json())
     }));
 
@@ -167,11 +159,6 @@ setInterval(
                 .map(cpu => ({ model: cpu.model, percentage: cpu.percentage })));
     },
     1000);
-
-app.use("/assets/images/generated", express.static("./output"))
-app.use("/lib/chartjs", express.static("./node_modules/chart.js/dist"));
-app.use("/lib/revealjs", express.static("./node_modules/reveal.js/dist"));
-app.use("/", express.static("./client/"));
 
 const HTTP_PORT = 80;
 httpServer.listen(HTTP_PORT);

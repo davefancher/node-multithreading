@@ -155,11 +155,20 @@ const scrollElementToLastChild =
                     ? scrollTop
                     : scrollBottom;
         }
-    }
+    };
+
+const stopMonitors =
+    socket =>
+        void socket
+            .off("disconnect")
+            .off("log")
+            .off("cpu")
+            .off("resize-complete");
 
 const DEMO = {
     SERIAL: "serial",
     PARALLEL: "parallel",
+    CHILD_PROCESS: "childProcess",
     WORKER_THREAD: "workerThread",
     THREAD_POOL: "threadPool"
 };
@@ -185,14 +194,35 @@ const runDemo =
                     .on(
                         "disconnect",
                         reason => {
-                            const logMessage = JSON.stringify({
+                            const writeToLog = writeLogMessage(__logList);
+
+                            const disconnectedMessage = JSON.stringify({
                                 timestamp: new Date().toISOString(),
-                                label: "[Thread Id: N/A]",
+                                label: "[-----:--]",
                                 level: "error",
                                 message: `Socket disconnected: ${reason}`
                             });
 
-                            writeLogMessage(__logList)(logMessage);
+                            writeToLog(disconnectedMessage);
+
+                            setTimeout(
+                                () => {
+                                    if (__logInterval) {
+                                        const stoppingMonitorsMessage = JSON.stringify({
+                                            timestamp: new Date().toISOString(),
+                                            label: "[-----:--]",
+                                            level: "error",
+                                            message: "Stopping monitors"
+                                        });
+
+                                        clearInterval(__logInterval);
+                                        writeToLog(stoppingMonitorsMessage);
+                                        scrollElementToLastChild(__logList);
+
+                                        stopMonitors(socket);
+                                    }
+                                },
+                                30000);
                         })
                     .on(
                         "log",
@@ -203,15 +233,12 @@ const runDemo =
                     .on(
                         "resize-complete",
                         result => {
+                            // Wait a few seconds to get the graphs back to "idle"
                             setTimeout(
                                 () => {
                                     showGeneratedFiles(__fileList, result);
 
-                                    void socket
-                                        .off("disconnect")
-                                        .off("log")
-                                        .off("cpu")
-                                        .off("resize-complete");
+                                    stopMonitors(socket);
 
                                     clearInterval(__logInterval);
                                 },
@@ -235,6 +262,7 @@ const runWorkerThreadDemo = runDemo(DEMO.WORKER_THREAD);
 const DEMO_RUNNERS = Object.freeze({
     [DEMO.SERIAL]: runDemo(DEMO.SERIAL),
     [DEMO.PARALLEL]: runDemo(DEMO.PARALLEL),
+    [DEMO.CHILD_PROCESS]: runDemo(DEMO.CHILD_PROCESS),
     [DEMO.WORKER_THREAD]: runDemo(DEMO.WORKER_THREAD),
     [DEMO.THREAD_POOL]: runDemo(DEMO.THREAD_POOL)
 });
