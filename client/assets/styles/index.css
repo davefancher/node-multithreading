@@ -1,5 +1,34 @@
-section {
+.slides > section {
     height: 100%;
+}
+
+.title_slide {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    height: 50%;
+    width: 65%;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+}
+
+.title_slide > .hero_image {
+    flex: 1 1 300px;
+    border-radius: 25px;
+}
+
+.title_slide > .title {
+    flex: 1 1 400px;
+    margin-left: 20px;
+    text-align: left;
+}
+
+.title_slide > .title > p {
+    font-size: 0.5em;
 }
 
 .demo_slide {
