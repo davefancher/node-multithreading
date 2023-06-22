@@ -2,14 +2,18 @@
 <html>
 
 <head>
-    <link rel="stylesheet" href="/lib/revealjs/reveal.css">
-    <link rel="stylesheet" href="/lib/revealjs/theme/moon.css">
+    <link rel="stylesheet" href="/lib/revealjs/reveal.css" />
+    <link rel="stylesheet" href="/lib/revealjs/theme/moon.css" />
+    <link rel="stylesheet" href="/lib/revealjs/plugins/highlight/zenburn.css" />
     <link rel="stylesheet" type="text/css" href="/assets/styles/index.css" />
 
     <script src="/socket.io/socket.io.js" lang="javascript"></script>
     <script src="/lib/chartjs/chart.umd.js" lang="javascript"></script>
     <script src="/lib/revealjs/reveal.js" lang="javascript"></script>
-    <script src="/reveal-notes-server/client.js"></script>
+    <script src="/lib/revealjs/plugins/highlight/highlight.js" lang="javascript"></script>
+    <script src="/lib/revealjs/plugins/markdown/markdown.js" lang="javascript"></script>
+    <script src="/lib/revealjs/plugins/mermaid/mermaid.js" lang="javascript"></script>
+    <script src="/lib/revealjs/plugins/notes/notes.js" lang="javascript"></script>
     <script src="/assets/scripts/index.js" lang="javascript"></script>
 
     <title>JavaScript Multithreading</title>
@@ -40,10 +44,95 @@
             </section>
 
             <section>
-                <div class="content-slide">
-                    <h2>The Node.js Event Loop</h2>
+                <div class="content_slide">
+                    <h2>Multithreading? In Node?</h2>
 
-                    <img src="./assets/images/Node%20Event%20Loop.png">
+                    <div class="content">
+                        <ul>
+                            <li>JS is single threaded!</li>
+                            <li>You can't do computation-heavy stuff!</li>
+                            <li>Node.js is only good for I/O!</li>
+                            <li>Never block the event loop!</li>
+                            <li>You need a "real" platform that's designed for that!</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="content_slide">
+                    <h2>Today's Demos</h2>
+
+                    <div class="content">
+                        <ul>
+                            <li>Resizing images with jimp</li>
+                            <li>
+                                Multiple strategies
+                                <ul>
+                                    <li>Serialized</li>
+                                    <li>Concurrent Promises</li>
+                                    <li>Child Process</li>
+                                    <li>Worker Threads</li>
+                                    <li>Pooled Worker Threads</li>
+                                </ul>
+                            </li>
+                            <li>CPU Usage Monitoring</li>
+                            <li>Logging</li>
+                        </ul>
+                        <div style="width: 455px; height: 240px">
+                            <img src="./assets/images/example-output.png" />
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="notes">
+                    <ul>
+                        <li>11 different sizes</li>
+                        <li>Computation heavy</li>
+                        <li>Different scales, different times</li>
+                        <li>Consistent</li>
+                        <li>Demonstrates the impact of blocking event loops and distributing processing</li>
+                        <li>CPU monitoring is timer driven</li>
+                        <li>Socket.io for communication between the slides and node</li>
+                    </ul>
+                </aside>
+            </section>
+
+            <section>
+                <div class="content_slide">
+                    <h2>The Event Loop</h2>
+
+                    <div class="content">
+                        <div class="mermaid">
+                            <pre>
+                                %%{init: {}}%%
+                                flowchart TD
+                                    subgraph &nbsp;
+                                    F --> A
+                                    A(Timers) --> B[Pending Callbacks]
+                                    B --> C[Idle, Prepare]
+                                    C --> D[Poll]
+                                    D --> E[Check]
+                                    E --> F[Close Callbacks]
+                                    end
+                                    G[Inbound Connections] --> D
+                            </pre>
+                        </div>
+                        <div>
+                            <ul>
+                                <li>Non-blocking concurrency</li>
+                                <li>
+                                    Callback queues at various stages
+                                    <ul>
+                                        <li>Timers</li>
+                                        <li>I/O</li>
+                                        <li>setImmediate</li>
+                                        <li>Close callbacks</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
 
                 <aside class="notes">
@@ -56,14 +145,40 @@
             </section>
 
             <section>
-                <div class="content-slide">
+                <div class="content_slide">
                     <h2>libuv</h2>
 
-                    <div>
-                        <p>Where the "magic" happens</p>
-                        <p>OS thread pool to handle async I/O operations</p>
-                        <p>Defaults to 4 threads (<code>UV_THREADPOOL_SIZE</code>)</p>
+                    <div class="content">
+                        <img src="./assets/images/libuv-logo.png" />
+                        <ul>
+                            <li>Where the "magic" happens</li>
+                            <li>Implemented in C</li>
+                            <li>Asynchronous & non-blocking</li>
+                            <li>Runs the event loop</li>
+                            <li>Delegates certain tasks to OS operations or its internal thread pool</li>
+                            <li>Defaults to 4 threads in the pool (<code>UV_THREADPOOL_SIZE</code>)</li>
+                        </ul>
                     </div>
+                </div>
+
+                <aside class="notes">
+                    <ul>
+                        <li>The libuv thread pool is shared across all event loops in the process</li>
+                    </ul>
+                </aside>
+            </section>
+
+            <section>
+                <div class="content_slide">
+                    <h2>Serial Workflow</h2>
+
+                    <pre>
+                        <code class="javascript" data-trim data-noescape data-line-numbers>
+                            for (let scale of targetScales) {
+                                await resize(scale);
+                            }
+                        </code>
+                    </pre>
                 </div>
             </section>
 
@@ -87,6 +202,20 @@
                 </div>
             </section>
 
+            <section>
+                <div class="content_slide">
+                    <h2>Parallel Workflow</h2>
+
+                    <pre>
+                        <code class="javascript" data-trim data-noescape data-line-numbers>
+                            const resizePromises = scales.map(resize);
+
+                            await Promise.allSettled(resizePromises);
+                        </code>
+                    </pre>
+                </div>
+            </section>
+
             <section id="demoSlide_parallel">
                 <div class="demo_slide">
                     <div class="slide_title">
@@ -107,6 +236,65 @@
                 </div>
             </section>
 
+            <section>
+                <div class="content_slide">
+                    <h2>Child Processes</h2>
+
+                    <ul>
+                        <li>
+                            <code>child_process</code> module
+                            <ul>
+                                <li><code>exec</code> / <code>execSync</code></li>
+                                <li><code>execFile</code> / <code>execFileSync</code></li>
+                                <li><code>spawn</code> / <code>spawnSync</code></li>
+                                <li><code>fork</code></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <aside class="notes">
+                    <ul>
+                        <li>exec - Spawns a shell then runs the supplied command. Buffers output.</li>
+                        <li>execFile - Same as exec but doesn't spawn a shell</li>
+                        <li>spawn - Basically exec, but streams output. Creates a ChildProcess object.</li>
+                        <li>fork - Spawn, but specifically for node.js processes. Establishes a communication channel between both processes</li>
+                    </ul>
+                </aside>
+            </section>
+
+            <section>
+                <div class="content_slide">
+                    <h2>Creating a Fork</h2>
+
+                    <pre>
+                        <code class="javascript" data-trim data-noescape data-line-numbers>
+                            // Parent Process
+                            const { fork } = require("node:child_process");
+                            const path = require("node:path");
+
+                            const workerScriptPath = path.join(__dirname, "childProcessResize.js");
+
+                            const cp =
+                                fork(workerScriptPath)
+                                    .on("message", handleMessage)
+                                    .on("error", handleError);
+
+                            // ----------
+
+                            // Child Process
+                            process
+                                .on(
+                                    "message",
+                                    msg => {
+                                        // Do something
+                                        process.send(/* response object */);
+                                    });
+                        </code>
+                    </pre>
+                </div>
+            </section>
+
             <section id="demoSlide_childProcess">
                 <div class="demo_slide">
                     <div class="slide_title">
@@ -124,6 +312,20 @@
                     <ol id="logList_childProcess" class="log_list"></ol>
 
                     <ul id="fileList_childProcess" class="file_list"></ul>
+                </div>
+            </section>
+
+            <section>
+                <div class="content_slide">
+                    <h2>But...isn't that Cheating?</h2>
+                    <h2 class="fragment">...yeah</h2>
+                    <h2 class="fragment">It is</h2>
+                </div>
+            </section>
+
+            <section>
+                <div class="content_slide">
+                    <h2>Worker Threads</h2>
                 </div>
             </section>
 

@@ -16,9 +16,12 @@
     margin: auto;
 }
 
+img {
+    border-radius: 25px;
+}
+
 .title_slide > .hero_image {
     flex: 1 1 200px;
-    border-radius: 25px;
 }
 
 .title_slide > .title {
@@ -29,6 +32,41 @@
 
 .title_slide > .title > p {
     font-size: 0.5em;
+}
+
+.mermaid {
+    background-color: #EEE8D5;
+    width: fit-content;
+    justify-self: center;
+    height: fit-content;
+    padding: 25px;
+    border-radius: 25px;
+    zoom: 1.5;
+}
+
+.content_slide {
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: 100px auto;
+    height: fit-content;
+    width: 80%;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+}
+
+.content_slide > .content {
+    display: flex;
+    flex-direction: row;
+    justify-self: center;
+}
+
+.content_slide > .content > img {
+    height: 300px;
+    width: 300px;
 }
 
 .demo_slide {
@@ -104,6 +142,7 @@
 }
 
 .file_list {
+    align-content: flex-start;
     align-self: stretch;
     display: flex!important;
     flex-flow: row wrap;
@@ -122,10 +161,13 @@
 .file_list > LI > A {
     background-color: #EEE8D5;
     border: solid 1px #EEE8D5;
+    border-radius: 25px;
     color: #002b36;
     display: inline-block;
     padding: 5px;
-    width: 425px;
+    margin: 5px;
+    width: 75px;
+    text-align: center;
 }
 
 .file_list > LI > A:hover {

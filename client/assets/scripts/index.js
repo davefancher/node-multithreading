@@ -122,9 +122,11 @@ const showGeneratedFiles =
                 const urlParts = new URL(fileUrl).pathname.split("/");
                 const fileName = decodeURI(urlParts[urlParts.length - 1]);
 
+                const scale = /\d{2,3}\%/.exec(fileName)[0];
+
                 const link = document.createElement("A");
                 link.href = fileUrl;
-                link.text = fileName;
+                link.text = scale;
                 link.target = "_blank";
 
                 const listItem = document.createElement("li");
@@ -271,7 +273,13 @@ window.addEventListener(
     "load",
     () => {
         Reveal.initialize({
-            disableLayout: true
+            disableLayout: true,
+            plugins: [
+                RevealHighlight,
+                RevealMarkdown,
+                RevealMermaid,
+                RevealNotes
+            ]
         });
 
         const socket = io("ws://localhost", { transports: [ "websocket" ] });

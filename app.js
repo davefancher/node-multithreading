@@ -17,7 +17,7 @@ const { combine, colorize, printf, json, timestamp } = winston.format;
 const { LOG_LEVEL, PROCESSING_STRATEGY } = require("./lib/constants");
 const { PIPE, PIPE_SYNC, TEE_SYNC, WITH_TIMING } = require("./lib/extensions");
 
-const TARGET_SCALES = [ 10, 20, 30, 40, 50, 60, 70, 80, 90, 150, 200 ];
+const TARGET_SCALES = [ 10, 20, 30, 40, 50, 60, 70, 80, 90, 150, 175, 200 ];
 
 let lastCpuTimes = os.cpus();
 
@@ -63,7 +63,38 @@ const formatGeneratedFileNameAsUrl =
                         new URL(
                             `assets/images/generated/${path.basename(p.dir)}/${encodeURI(p.base)}`,
                             baseUrl)
-                            .toString())
+                            .toString());
+
+const logLibuvThreadPoolSize =
+    () =>
+        winston.debug(`UV_THREADPOOL_SIZE = ${process.env.UV_THREADPOOL_SIZE ?? "4 (default)"}`);
+
+const initOutputDirectory =
+    options => {
+        if(!fs.existsSync(options.targetDirectory)) {
+            fs.mkdirSync(options.targetDirectory);
+        }
+    };
+
+const finalizeResize =
+    (socket, strategy) =>
+        result => {
+            if (!socket.connected) {
+                console.error("Socket disconnected!");
+                return;
+            }
+
+            const convertFileNameToLocalhostUrl = formatGeneratedFileNameAsUrl("http://localhost");
+
+            socket.emit(
+                "resize-complete",
+                {
+                    strategy,
+                    files:
+                        result
+                            .map(({ value: fn }) => convertFileNameToLocalhostUrl(fn))
+                });
+        };
 
 const doResize =
     (socket, strategy) =>
@@ -73,37 +104,21 @@ const doResize =
             targetDirectory: path.join(__dirname, "output", dayjs().format("YYYYMMDD_HHmmss") + "_" + strategy),
             targetScales: TARGET_SCALES
         })
-        [TEE_SYNC](options => {
-            if(!fs.existsSync(options.targetDirectory)) {
-                fs.mkdirSync(options.targetDirectory);
-            }
-        })
+        [TEE_SYNC](logLibuvThreadPoolSize)
+        [TEE_SYNC](initOutputDirectory)
         [PIPE_SYNC](
             `./lib/strategies/${strategy}`
                 [PIPE_SYNC](require)
                 [WITH_TIMING](`Resize (${strategy})`, "info"))
-        [PIPE](result => {
-            if (!socket.connected) {
-                console.error("Socket disconnected!");
-                return;
-            }
-
-            socket.emit(
-                "resize-complete",
-                {
-                    strategy,
-                    files:
-                        result
-                            .map(({ value }) => value)
-                            .map(formatGeneratedFileNameAsUrl("http://localhost"))
-                });
-        });
+        [PIPE](finalizeResize(socket, strategy));
 
 const httpServer =
     express()
         .use("/assets/images/generated", express.static("./output"))
         .use("/lib/chartjs", express.static("./node_modules/chart.js/dist"))
         .use("/lib/revealjs", express.static("./node_modules/reveal.js/dist"))
+        .use("/lib/revealjs/plugins", express.static("./node_modules/reveal.js/plugin"))
+        .use("/lib/revealjs/plugins/mermaid", express.static("./node_modules/reveal.js-mermaid-plugin/plugin/mermaid"))
         .use("/", express.static("./client/"))
         [PIPE_SYNC](http.createServer);
 

@@ -12,7 +12,10 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}\\app.js",
-            "outputCapture": "std"
+            "outputCapture": "std",
+            "env": {
+                "UV_THREADPOOL_SIZE": "12"
+            }
         }
     ]
 }
