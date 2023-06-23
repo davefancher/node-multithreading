@@ -274,6 +274,7 @@ window.addEventListener(
     () => {
         Reveal.initialize({
             disableLayout: true,
+            hash: true,
             plugins: [
                 RevealHighlight,
                 RevealMarkdown,
