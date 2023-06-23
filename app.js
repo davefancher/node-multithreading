@@ -18,6 +18,7 @@ const { LOG_LEVEL, PROCESSING_STRATEGY } = require("./lib/constants");
 const { PIPE, PIPE_SYNC, TEE_SYNC, WITH_TIMING } = require("./lib/extensions");
 
 const TARGET_SCALES = [ 10, 20, 30, 40, 50, 60, 70, 80, 90, 150, 175, 200 ];
+//const TARGET_SCALES = [ 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 150, 175, 200 ];
 
 let lastCpuTimes = os.cpus();
 
