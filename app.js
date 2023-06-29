@@ -73,7 +73,7 @@ const logLibuvThreadPoolSize =
 const initOutputDirectory =
     options => {
         if(!fs.existsSync(options.targetDirectory)) {
-            fs.mkdirSync(options.targetDirectory);
+            fs.mkdirSync(options.targetDirectory, { recursive: true });
         }
     };
 
