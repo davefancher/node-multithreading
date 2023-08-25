@@ -13,9 +13,9 @@
             ],
             "program": "${workspaceFolder}\\app.js",
             "outputCapture": "std",
-            "env": {
-                "UV_THREADPOOL_SIZE": "12"
-            }
+            // "env": {
+            //     "UV_THREADPOOL_SIZE": "12"
+            // }
         }
     ]
 }
