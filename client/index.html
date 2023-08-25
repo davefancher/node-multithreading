@@ -48,11 +48,10 @@
 
                     <div class="content">
                         <ul>
-                            <li>JS is single threaded!</li>
-                            <li>You can't do computation-heavy stuff!</li>
-                            <li>Node.js is only good for I/O!</li>
-                            <li>Never block the event loop!</li>
-                            <li>You need a "real" platform that's designed for that!</li>
+                            <li class="fragment">JS is single threaded!</li>
+                            <li class="fragment">You can't do computation-heavy stuff!</li>
+                            <li class="fragment">Node.js is only good for I/O!</li>
+                            <li class="fragment">You need a "real" platform that's designed for that!</li>
                         </ul>
                     </div>
                 </div>
@@ -64,8 +63,10 @@
 
                     <div class="content">
                         <ul>
-                            <li>Resizing images with jimp</li>
-                            <li>
+                            <li class="fragment">Node.js backend with Socket.io</li>
+                            <li class="fragment">Reveal.js slides</li>
+                            <li class="fragment">Resizing images with jimp</li>
+                            <li class="fragment">
                                 Multiple strategies
                                 <ul>
                                     <li>Serialized</li>
@@ -75,8 +76,8 @@
                                     <li>Pooled Worker Threads</li>
                                 </ul>
                             </li>
-                            <li>CPU Usage Monitoring</li>
-                            <li>Logging</li>
+                            <li class="fragment">CPU Usage Monitoring</li>
+                            <li class="fragment">Logging</li>
                         </ul>
                         <div style="width: 455px; height: 240px">
                             <img src="./assets/images/example-output.png" />
@@ -86,10 +87,10 @@
 
                 <aside class="notes">
                     <ul>
-                        <li>11 different sizes</li>
+                        <li>12 different sizes</li>
                         <li>Computation heavy</li>
-                        <li>Different scales, different times</li>
-                        <li>Consistent</li>
+                        <li>It takes some time to scale</li>
+                        <li>Consistent/Repeatable</li>
                         <li>Demonstrates the impact of blocking event loops and distributing processing</li>
                         <li>CPU monitoring is timer driven</li>
                         <li>Socket.io for communication between the slides and node</li>
@@ -153,8 +154,8 @@
                         </div>
                         <div>
                             <ul>
-                                <li>Non-blocking concurrency</li>
-                                <li>
+                                <li class="fragment">Non-blocking concurrency</li>
+                                <li class="fragment">
                                     Callback queues at various stages
                                     <ul>
                                         <li>Timers</li>
@@ -184,12 +185,12 @@
                     <div class="content">
                         <img src="./assets/images/libuv-logo.png" />
                         <ul>
-                            <li>Where the "magic" happens</li>
-                            <li>Implemented in C</li>
-                            <li>Runs the event loop</li>
-                            <li>Asynchronous & non-blocking</li>
-                            <li>Delegates certain tasks to OS operations or its internal thread pool</li>
-                            <li>Defaults to 4 threads in the pool (<code>UV_THREADPOOL_SIZE</code>)</li>
+                            <li class="fragment">Where the "magic" happens</li>
+                            <li class="fragment">Implemented in C</li>
+                            <li class="fragment">Runs the Node.js event loop</li>
+                            <li class="fragment">Asynchronous & non-blocking</li>
+                            <li class="fragment">Delegates certain tasks to OS operations or its internal thread pool</li>
+                            <li class="fragment">Defaults to 4 threads in the pool (<code>UV_THREADPOOL_SIZE</code>)</li>
                         </ul>
                     </div>
                 </div>
@@ -231,6 +232,12 @@
 
             <section>
                 <div class="content_slide">
+                    <h2>How can we unblock the event loop?</h2>
+                </div>
+            </section>
+
+            <section>
+                <div class="content_slide">
                     <h2>Child Processes</h2>
 
                     <ul>
@@ -254,8 +261,29 @@
                         <li>execFile - Same as exec but doesn't spawn a shell</li>
                         <li>spawn - Basically exec, but streams output. Creates a ChildProcess object.</li>
                         <li>fork - Spawn, but specifically for node.js processes. Establishes a communication channel between both processes</li>
+                        <li>The <code>Cluster</code> module uses <code>fork</code></li>
                     </ul>
                 </aside>
+            </section>
+
+            <section>
+                <div class="content_slide">
+                    <h2>Child Process Communication</h2>
+
+                    <div class="content">
+                        <div class="mermaid">
+                            <pre>
+                                %%{init: {}}%%
+                                sequenceDiagram
+                                    participant Host Process
+                                    participant Forked Process
+
+                                    Host Process->>Forked Process: subprocess.send (IPC)
+                                    Forked Process->>Host Process: process.send (IPC)
+                            </pre>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <section>
@@ -286,26 +314,6 @@
                                     });
                         </code>
                     </pre>
-                </div>
-            </section>
-
-            <section>
-                <div class="content_slide">
-                    <h2>Child Process Communication</h2>
-
-                    <div class="content">
-                        <div class="mermaid">
-                            <pre>
-                                %%{init: {}}%%
-                                sequenceDiagram
-                                    participant Host Process
-                                    participant Forked Process
-
-                                    Host Process->>Forked Process:subprocess.send (IPC)
-                                    Forked Process->>Host Process:process.send (IPC)
-                            </pre>
-                        </div>
-                    </div>
                 </div>
             </section>
 
@@ -362,6 +370,26 @@
 
             <section>
                 <div class="content_slide">
+                    <h2>Worker Thread Communication</h2>
+
+                    <div class="content">
+                        <div class="mermaid">
+                            <pre>
+                                %%{init: {}}%%
+                                sequenceDiagram
+                                    participant Main Thread
+                                    participant Worker Thread
+
+                                    Main Thread->>Worker Thread: worker.postMessage (MessagePort)
+                                    Worker Thread->>Main Thread: parentPort.postMessage (MessagePort)
+                            </pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="content_slide">
                     <h2>Creating a Worker Thread</h2>
 
                     <pre>
@@ -394,26 +422,6 @@
                 </div>
             </section>
 
-            <section>
-                <div class="content_slide">
-                    <h2>Worker Thread Communication</h2>
-
-                    <div class="content">
-                        <div class="mermaid">
-                            <pre>
-                                %%{init: {}}%%
-                                sequenceDiagram
-                                    participant Main Thread
-                                    participant Worker Thread
-
-                                    Main Thread->>Worker Thread:worker.postMessage (MessagePort)
-                                    Worker Thread->>Main Thread:parentPort.postMessage (MessagePort)
-                            </pre>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
             <section id="demoSlide_workerThread">
                 <div class="demo_slide">
                     <div class="slide_title">
@@ -440,9 +448,9 @@
 
                     <div class="content">
                         <ul>
-                            <li>Last example created a thread for every scale</li>
-                            <li>All CPUs spiked</li>
-                            <li>What if we have more scales than CPUs?</li>
+                            <li class="fragment">Last example created a thread for every scale</li>
+                            <li class="fragment">All CPUs spiked</li>
+                            <li class="fragment">What if we have more scales than CPUs?</li>
                         </ul>
                     </div>
                 </div>
@@ -454,12 +462,12 @@
 
                     <div class="content">
                         <ul>
-                            <li>Separate from the libuv pool</li>
-                            <li>Encapsulates the <code>worker_thread</code> module</li>
-                            <li>Initializes a known, controlled number of threads</li>
-                            <li>Processes work on one of those threads or queues it until a thread is free</li>
-                            <li>Use a number of threads appropriate for your environment</li>
-                            <li><a href="https://nodejs.org/api/async_context.html#using-asyncresource-for-a-worker-thread-pool" target="_blank">An Example Pool</a></li>
+                            <li class="fragment">Separate from the libuv pool</li>
+                            <li class="fragment">Encapsulates the <code>worker_thread</code> module</li>
+                            <li class="fragment">Initializes a known, controlled number of threads</li>
+                            <li class="fragment">Processes work on one of those threads or queues it until a thread is free</li>
+                            <li class="fragment">Use a number of threads appropriate for your environment</li>
+                            <li class="fragment"><a href="https://nodejs.org/api/async_context.html#using-asyncresource-for-a-worker-thread-pool" target="_blank">An Example Pool</a></li>
                         </ul>
                     </div>
                 </div>
